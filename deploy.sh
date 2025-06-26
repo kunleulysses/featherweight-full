@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+[ -f .env ] || { echo "[ERROR] .env file not found"; exit 1; }
+echo "[START] Loading environment variables from .env"
+set -o allexport
+source .env
+set +o allexport
+echo "[SUCCESS] Loaded environment variables from .env"
+
+echo "[START] npm install (with devDependencies)"
+if npm install --include=dev; then
+  echo "[SUCCESS] npm install"
+else
+  echo "[ERROR] npm install failed"
+  exit 1
+fi
+
+echo "[START] npm run build"
+if npm run build; then
+  echo "[SUCCESS] npm run build"
+else
+  echo "[ERROR] npm run build failed"
+  exit 1
+fi
+
+echo "[START] npm run migrate"
+if npm run migrate; then
+  echo "[SUCCESS] npm run migrate"
+else
+  echo "[ERROR] npm run migrate failed"
+  exit 1
+fi
+
+echo "[START] npm run seed:initial"
+if npm run seed:initial; then
+  echo "[SUCCESS] npm run seed:initial"
+else
+  echo "[ERROR] npm run seed:initial failed"
+  exit 1
+fi
+
+echo "[START] pm2 restart featherweight-main"
+if pm2 restart featherweight-main --update-env; then
+  echo "[SUCCESS] pm2 restart featherweight-main"
+else
+  echo "[ERROR] pm2 restart featherweight-main failed"
+  exit 1
+fi
+
+echo "[START] Reloading Caddy"
+if sudo systemctl reload caddy; then
+  echo "[SUCCESS] Caddy reloaded"
+else
+  echo "[ERROR] Caddy reload failed"
+  exit 1
+fi
+
+echo "[START] Checking site health"
+HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' https://featherweight.world) || HTTP_CODE="000"
+if [ "$HTTP_CODE" = "200" ]; then
+  echo "✅ featherweight.world is live"
+else
+  echo "❌ Deployment failed: site not responding (HTTP $HTTP_CODE)"
+  exit 1
+fi
