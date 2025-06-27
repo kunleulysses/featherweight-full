@@ -24,19 +24,19 @@ else
   exit 1
 fi
 
-echo "[START] npm run migrate --if-present (if present)"
-if npm run migrate --if-present --if-present; then
-  echo "[SUCCESS] npm run migrate --if-present"
+echo "[START] npm run migrate (if present)"
+if npm run migrate --if-present; then
+  echo "[SUCCESS] npm run migrate"
 else
-  echo "[ERROR] npm run migrate --if-present failed"
+  echo "[ERROR] npm run migrate failed"
   exit 1
 fi
 
-echo "[START] npm run seed:initial --if-present (if present)"
-if npm run seed:initial --if-present --if-present; then
-  echo "[SUCCESS] npm run seed:initial --if-present"
+echo "[START] npm run seed:initial (if present)"
+if npm run seed:initial --if-present; then
+  echo "[SUCCESS] npm run seed:initial"
 else
-  echo "[ERROR] npm run seed:initial --if-present failed"
+  echo "[ERROR] npm run seed:initial failed"
   exit 1
 fi
 
@@ -44,8 +44,13 @@ echo "[START] pm2 restart featherweight-main"
 if pm2 restart featherweight-main --update-env; then
   echo "[SUCCESS] pm2 restart featherweight-main"
 else
-  echo "[ERROR] pm2 restart featherweight-main failed"
-  exit 1
+  echo "[WARN] pm2 restart featherweight-main failed (process may not exist), attempting to start"
+  if pm2 start npm --name featherweight-main -- run start --update-env; then
+    echo "[SUCCESS] pm2 start featherweight-main"
+  else
+    echo "[ERROR] pm2 start featherweight-main failed"
+    exit 1
+  fi
 fi
 
 echo "[START] Reloading Caddy"
