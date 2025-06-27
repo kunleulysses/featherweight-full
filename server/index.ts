@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -7,11 +7,11 @@ import { startEmailProcessor } from "./enhanced-email-processor";
 import { startEmailScheduler } from "./scheduler";
 // import { startMoodPatternRecognition } from "./mood-pattern-recognition";
 // import { startConversationInsights } from "./conversation-insights";
-import { 
-  generateJournalSummary, 
-  generateJournalTags, 
-  getUserTags, 
-  searchByTags 
+import {
+  generateJournalSummary,
+  generateJournalTags,
+  getUserTags,
+  searchByTags
 } from "./journal-analytics";
 
 const app = express();
@@ -24,99 +24,83 @@ app.use('/images', express.static(path.join(process.cwd(), 'public/images')));
 // Serve the public directory for favicon and other static assets
 app.use(express.static(path.join(process.cwd(), 'public')));
 
+// ——————— Request logging middleware ——————————————————————————
 app.use((req, res, next) => {
   const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+  const reqPath = req.path;
+  let capturedJsonResponse: Record<string, any> | undefined;
 
   const originalResJson = res.json;
   res.json = function (bodyJson, ...args) {
     capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
+    return originalResJson.apply(this, [bodyJson, ...args]);
   };
 
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
+    if (reqPath.startsWith("/api")) {
+      let line = `${req.method} ${reqPath} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) line += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      if (line.length > 80) line = line.slice(0, 79) + "…";
+      log(line);
     }
   });
 
   next();
 });
+// ————————————————————————————————————————————————
 
 (async () => {
-  // First register main routes which includes auth setup
+  // 1) Main + auth routes
   const server = await registerRoutes(app);
-  
-  // Then register conversation routes after auth is configured
+
+  // 2) Conversation & analytics
   addConversationRoutes(app);
-  
-  // Add journal analytics routes
-  app.post("/api/journal/summary", generateJournalSummary);
+  app.post("/api/journal/summary",    generateJournalSummary);
   app.post("/api/journal/tags/generate", generateJournalTags);
-  app.get("/api/journal/tags", getUserTags);
-  app.get("/api/journal/search/tags", searchByTags);
-  
-  // Start the email processor for background processing of email queue
+  app.get( "/api/journal/tags",       getUserTags);
+  app.get( "/api/journal/search/tags", searchByTags);
+
+  // 3) Background workers
   startEmailProcessor();
-  
-  // Start the scheduler for daily inspiration emails
   startEmailScheduler();
-  
-  // Initialize genius features (commented out for now)
   // startMoodPatternRecognition();
   // startConversationInsights();
-  
-  console.log('🚀 All Featherweight.world services initialized successfully!');
 
+  log('🚀 All Featherweight.world services initialized successfully!');
+
+  // 4) Global error handler
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
+    const status  = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
     res.status(status).json({ message });
     throw err;
   });
 
-  // Health check endpoint
-  app.get('/api/health', (_req, res) => {
-    res.json({ status: 'ok' });
+  // ——————— JSON Health & Metrics ————————————————————————
+  app.get("/api/health", (_req, res) => {
+    res.json({ status: "ok" });
   });
 
-  // Consciousness metrics endpoint (stub)
-  app.get('/api/consciousness/metrics', (_req, res) => {
+  app.get("/api/consciousness/metrics", (_req, res) => {
     res.json({
       uptime: process.uptime(),
       memoryUsage: process.memoryUsage(),
       timestamp: Date.now(),
     });
   });
+  // ————————————————————————————————————————————————
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // 5) Dev vs Prod
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // Listen on port 5000 for Replit deployment compatibility
+  // 6) Start HTTP server
   const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  server.listen({ port, host: "0.0.0.0", reusePort: true }, () => {
     log(`serving on port ${port}`);
   });
 })();
