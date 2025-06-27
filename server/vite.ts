@@ -83,8 +83,11 @@ export function serveStatic(app: Express) {
 
   app.use(express.static(distPath));
 
-  // SPA fallback
-  app.use("*", (_req, res) => {
+  // Serve index.html for non-API GET requests (SPA fallback)
+  app.get("*", (req, res, next) => {
+    if (req.method === "GET" && req.path.startsWith("/api/")) {
+      return next(); // forward JSON API calls to Express
+    }
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
