@@ -24,19 +24,19 @@ else
   exit 1
 fi
 
-echo "[START] npm run migrate"
-if npm run migrate; then
-  echo "[SUCCESS] npm run migrate"
+echo "[START] npm run migrate --if-present (if present)"
+if npm run migrate --if-present --if-present; then
+  echo "[SUCCESS] npm run migrate --if-present"
 else
-  echo "[ERROR] npm run migrate failed"
+  echo "[ERROR] npm run migrate --if-present failed"
   exit 1
 fi
 
-echo "[START] npm run seed:initial"
-if npm run seed:initial; then
-  echo "[SUCCESS] npm run seed:initial"
+echo "[START] npm run seed:initial --if-present (if present)"
+if npm run seed:initial --if-present --if-present; then
+  echo "[SUCCESS] npm run seed:initial --if-present"
 else
-  echo "[ERROR] npm run seed:initial failed"
+  echo "[ERROR] npm run seed:initial --if-present failed"
   exit 1
 fi
 
