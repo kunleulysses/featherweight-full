@@ -40,6 +40,9 @@ else
   exit 1
 fi
 
+# Ensure PM2 home directory exists for logging
+mkdir -p "$HOME/.pm2"
+
 echo "[START] pm2 restart featherweight-main"
 if pm2 restart featherweight-main --update-env; then
   echo "[SUCCESS] pm2 restart featherweight-main"
