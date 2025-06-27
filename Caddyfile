@@ -1,0 +1,24 @@
+featherweight.world {
+	tls adekunle.adejokun@gmail.com
+
+	# 1) JSON API → Express on port 5000
+	handle /api/* {
+		reverse_proxy localhost:5000
+	}
+
+	# 2) WebSocket → OpenAI streaming on port 8080
+	handle /ws* {
+		reverse_proxy localhost:8080 {
+			header_up Connection {>Connection}
+			header_up Upgrade {>Upgrade}
+		}
+	}
+
+	# 3) Serve SPA & client-side routing
+	handle {
+		root * /opt/featherweight/FlappyJournal/public
+		file_server
+		try_files {path} /index.html
+		encode gzip
+	}
+}
