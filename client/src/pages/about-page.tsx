@@ -145,7 +145,6 @@ export default function AboutPage() {
             </Card>
           </div>
         </Container>
-        </Container>
       </Layout>
     </>
   );
