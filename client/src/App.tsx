@@ -51,12 +51,15 @@ function Router() {
     </Switch>
   );
 }
+import { Layout } from "@/components/layout/Layout";
 
 function App() {
   return (
     <TooltipProvider>
       <Toaster />
-      <Router />
+      <Layout>
+        <Router />
+      </Layout>
     </TooltipProvider>
   );
 }

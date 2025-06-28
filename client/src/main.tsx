@@ -8,7 +8,7 @@ import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
+    <ThemeProvider defaultTheme="dark">
       <AuthProvider>
         <App />
       </AuthProvider>

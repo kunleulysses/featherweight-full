@@ -1,36 +1,20 @@
+import React from "react";
 import { Container } from "@/components/ui/container";
-import { EmailPreview } from "@/components/emails/email-preview";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
 
 export function EmailPreviewSection() {
-  const { toast } = useToast();
-  const { user } = useAuth();
-  
-  const handleReply = () => {
-    toast({
-      title: "Demo Feature",
-      description: "In the real app, this would open your email client or a reply form.",
-    });
-  };
-  
   return (
-    <section className="py-16 bg-white">
+    <section className="py-24">
       <Container>
-        <div className="text-center mb-16">
-          <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-gray-900 mb-4">
-            Daily Doses of Wisdom & Joy
-          </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Here's a peek at the kind of emails you'll receive from Flappy.
-            {!user?.isPremium && <span className="block mt-2 text-sm text-primary">Free tier includes ads</span>}
+        <h2 className="font-heading text-3xl text-offwhite text-center mb-8">
+          Daily Inspiration via Email
+        </h2>
+        <div className="bg-slate-900 p-6 rounded-lg max-w-lg mx-auto">
+          <p className="text-slate-400">Subject: ✨ Today’s Cosmic Reflection</p>
+          <hr className="border-slate-700 my-4" />
+          <p className="text-offwhite">
+            Good morning! Today the stars whisper about the infinite potential within you...
           </p>
         </div>
-        
-        <EmailPreview 
-          onReply={handleReply} 
-          isPremium={user?.isPremium || false}
-        />
       </Container>
     </section>
   );

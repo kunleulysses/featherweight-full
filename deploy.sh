@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
+## Ensure we build esbuild service in an exec-mounted temp dir to avoid spawn EPERM
+export TMPDIR=/tmp
+export TMP=/tmp
+export TEMP=/tmp
+export TEMPDIR=/tmp
+unset XDG_RUNTIME_DIR
+## Use the esbuild binary from vite to avoid noexec tmp issues
+export ESBUILD_BINARY_PATH="$(pwd)/node_modules/vite/node_modules/esbuild/bin/esbuild"
 
 [ -f .env ] || { echo "[ERROR] .env file not found"; exit 1; }
 echo "[START] Loading environment variables from .env"

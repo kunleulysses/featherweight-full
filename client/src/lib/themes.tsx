@@ -22,7 +22,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
+  defaultTheme = "dark",
   storageKey = "featherweight-ui-theme",
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(

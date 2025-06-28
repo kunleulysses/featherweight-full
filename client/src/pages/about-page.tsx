@@ -1,6 +1,5 @@
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
+import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Feather, Mail, Heart, Activity, Phone } from "lucide-react";
 import { Helmet } from 'react-helmet';
@@ -13,14 +12,12 @@ export default function AboutPage() {
         <meta name="description" content="Learn more about Featherweight, the AI-powered journaling companion featuring Flappy the cosmic pelican." />
       </Helmet>
 
-      <Header />
-      
-      <main className="py-12">
+      <Layout>
         <Container>
-          <div className="max-w-4xl mx-auto space-y-12">
+          <div className="max-w-4xl mx-auto space-y-12 py-12">
             {/* Hero Section */}
             <div className="text-center space-y-4">
-              <h1 className="font-quicksand font-bold text-4xl md:text-5xl text-primary">About Featherweight</h1>
+              <h1 className="font-heading font-bold text-4xl md:text-5xl text-offwhite">About Featherweight</h1>
               <p className="text-xl text-muted-foreground">Meet your journaling companion with cosmic wisdom</p>
             </div>
             
@@ -28,7 +25,7 @@ export default function AboutPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl">
-                  <Feather className="h-6 w-6 text-primary" />
+                  <Feather className="h-6 w-6 text-accent" />
                   Our Story
                 </CardTitle>
               </CardHeader>
@@ -54,7 +51,7 @@ export default function AboutPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl">
-                  <Heart className="h-6 w-6 text-primary" />
+                  <Heart className="h-6 w-6 text-accent" />
                   Meet Flappy
                 </CardTitle>
               </CardHeader>
@@ -98,7 +95,7 @@ export default function AboutPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-2xl">
-                  <Activity className="h-6 w-6 text-primary" />
+                  <Activity className="h-6 w-6 text-accent" />
                   Our Approach
                 </CardTitle>
               </CardHeader>
@@ -148,9 +145,8 @@ export default function AboutPage() {
             </Card>
           </div>
         </Container>
-      </main>
-      
-      <Footer />
+        </Container>
+      </Layout>
     </>
   );
 }

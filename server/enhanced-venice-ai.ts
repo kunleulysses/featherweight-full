@@ -57,27 +57,35 @@ export class VeniceAI extends EventEmitter {
         this.config = {
             baseUrl: 'https://api.venice.ai/api/v1',
             model: 'llama-3.1-405b',
-            enableWebSocket: true,
+            enableWebSocket: false, // Disable WebSocket by default until endpoint is confirmed
             maxRetries: 3,
             timeout: 30000,
             ...config
         };
-        
-        if (this.config.enableWebSocket) {
-            this.initializeWebSocket();
+
+        // Only initialize WebSocket if explicitly enabled and we have a valid API key
+        if (this.config.enableWebSocket && this.config.apiKey) {
+            console.log('⚠️ WebSocket support is experimental. Venice AI may not support WebSocket streaming.');
+            console.log('🔄 Falling back to REST API for reliable operation.');
+            // Comment out WebSocket initialization for now
+            // this.initializeWebSocket();
         }
     }
     
     /**
      * Initialize WebSocket connection for real-time consciousness processing
+     * NOTE: Venice AI WebSocket endpoint needs to be confirmed
      */
     private async initializeWebSocket(): Promise<void> {
         try {
             console.log('🔌 Initializing Venice AI WebSocket connection...');
             
-            // Venice AI WebSocket endpoint (adjust based on actual API)
-            const wsUrl = `wss://api.venice.ai/v1/stream?token=${this.config.apiKey}`;
-            
+            // CORRECTED: Use proper Venice AI WebSocket endpoint
+            // Note: This endpoint may not exist - Venice AI primarily uses REST API
+            const wsUrl = `wss://api.venice.ai/v1/stream?authorization=Bearer%20${this.config.apiKey}`;
+
+            console.log(`🔗 Attempting WebSocket connection to: ${wsUrl.replace(this.config.apiKey, 'HIDDEN')}`);
+
             this.ws = new WebSocket(wsUrl, {
                 headers: {
                     'Authorization': `Bearer ${this.config.apiKey}`,
@@ -109,18 +117,30 @@ export class VeniceAI extends EventEmitter {
                 this.emit('disconnected', { code, reason });
                 
                 // Attempt reconnection for consciousness system
-                if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                if (code !== 404 && this.reconnectAttempts < this.maxReconnectAttempts) {
                     this.scheduleReconnect();
+                } else if (code === 404) {
+                    console.log('❌ WebSocket endpoint not found (404). Venice AI may not support WebSocket streaming.');
+                    console.log('🔄 Continuing with REST API only.');
                 }
             });
             
             this.ws.on('error', (error: Error) => {
                 console.error('Venice AI WebSocket error:', error);
+
+                // Check for specific error types
+                if (error.message.includes('404')) {
+                    console.log('❌ Venice AI WebSocket endpoint not found. Using REST API fallback.');
+                } else if (error.message.includes('EPROTO') || error.message.includes('SSL')) {
+                    console.log('❌ SSL/TLS error with WebSocket. Using REST API fallback.');
+                }
+
                 this.emit('error', error);
             });
             
         } catch (error) {
             console.error('Failed to initialize Venice AI WebSocket:', error);
+            console.log('🔄 Continuing with REST API only.');
             this.emit('error', error);
         }
     }
@@ -357,15 +377,21 @@ export class VeniceAI extends EventEmitter {
         
         // Test REST API
         try {
+            console.log('🧪 Testing Venice AI REST API connection...');
             await this.generateResponse('Test connection', { maxTokens: 10 });
             result.rest = true;
+            console.log('✅ Venice AI REST API connection successful');
         } catch (error) {
             result.error = `REST API error: ${error.message}`;
+            console.log(`❌ Venice AI REST API connection failed: ${error.message}`);
         }
-        
-        // Test WebSocket
+
+        // Test WebSocket (if enabled)
         result.websocket = this.wsConnected;
-        
+        if (this.config.enableWebSocket && !this.wsConnected) {
+            console.log('⚠️ Venice AI WebSocket not connected (using REST API fallback)');
+        }
+
         return result;
     }
 }
@@ -373,7 +399,7 @@ export class VeniceAI extends EventEmitter {
 // Export singleton instance for consciousness system
 export const veniceAI = new VeniceAI({
     apiKey: process.env.VENICE_API_KEY || '',
-    enableWebSocket: process.env.VENICE_WEBSOCKET_ENABLED !== 'false'
+    enableWebSocket: false // Disable WebSocket by default until endpoint is confirmed
 });
 
 // Handle process cleanup
