@@ -1,6 +1,7 @@
 import { defineConfig } from 'tailwindcss'
 import typography from '@tailwindcss/typography'
 
+/** @type {import('tailwindcss').Config} */
 export default defineConfig({
   content: [
     './index.html',
@@ -9,6 +10,8 @@ export default defineConfig({
   theme: {
     extend: {
       colors: {
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
         accent: '#00BFFF',
         offwhite: '#F0F0F0',
       },

@@ -128,7 +128,9 @@
   }
   
   body {
-    @apply bg-background text-foreground font-body;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    @apply font-body;
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
