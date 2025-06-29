@@ -10,17 +10,8 @@ COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts
 
 # Install client-specific dependencies without lifecycle scripts
-WORKDIR /app/client
-COPY client/package.json client/package-lock.json ./
-RUN npm ci --ignore-scripts
-
-# Copy the full repository into the image
 WORKDIR /app
+# Copy entire repository and install dependencies
 COPY . ./
-
-# Build the client for production
-WORKDIR /app/client
+# Build both client & server (client build outputs to /app/public)
 RUN npm run build
-
-# The static built files will be in /app/public
-# Use a host-side docker run command to extract them into your workspace.
